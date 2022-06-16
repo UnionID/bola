@@ -11,7 +11,7 @@ Usage:
     $ python path/to/train.py --data coco128.yaml --weights yolov5s.pt --img 640  # from pretrained (RECOMMENDED)
     $ python path/to/train.py --data coco128.yaml --weights '' --cfg yolov5s.yaml --img 640  # from scratch
 """
-
+import shutil
 import argparse
 import math
 import os
@@ -408,8 +408,8 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
             callbacks.run('on_fit_epoch_end', log_vals, epoch, best_fitness, fi)
 
             # Save model
-            if (not nosave) or (final_epoch and not evolve):  # if save
-                ckpt = {
+            #if (not nosave) or (final_epoch and not evolve):  # if save
+        ckpt = {
                     'epoch': epoch,
                     'best_fitness': best_fitness,
                     'model': deepcopy(de_parallel(model)).half(),
@@ -420,19 +420,32 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                     'date': datetime.now().isoformat()}
 
                 # Save last, best and delete
-                torch.save(ckpt, last)
-                if best_fitness == fi:
-                    torch.save(ckpt, best)
-                if opt.save_period > 0 and epoch % opt.save_period == 0:
-                    torch.save(ckpt, w / f'epoch{epoch}.pt')
-                !cp "/content/yolov5/runs/train/exp" /content/drive/MyDrive/bola
-                !rm -r "/content/yolov5/runs/train/exp" 
-                del ckpt
-                callbacks.run('on_model_save', last, epoch, final_epoch, best_fitness, fi)
-
+        torch.save(ckpt, last)
+        print("menyimpan weight >>", epoch)
+        if best_fitness == fi:
+            torch.save(ckpt, best)
+        if opt.save_period > 0 and epoch % opt.save_period == 0:
+            torch.save(ckpt, w / f'epoch{epoch}.pt')
+          #  del ckpt
+          #      callbacks.run('on_model_save', last, epoch, final_epoch, best_fitness, fi)
+                
+          
+                
             # Stop Single-GPU
-            if RANK == -1 and stopper(epoch=epoch, fitness=fi):
-                break
+        if RANK == -1 and stopper(epoch=epoch, fitness=fi):
+            break
+
+        source_folder = "/content/yolov5/exp.zip"
+        destination_folder = "/content/drive/MyDrive/bola/exp"
+
+        #for file_name in os.listdir(source_folder)
+        if epoch % 10 == 0 :
+            shutil.make_archive("exp", 'zip', "/content/yolov5/runs/train/exp")  
+            shutil.copy(source_folder, destination_folder)
+
+        print('make zip dan copy ')
+        
+        print("SELESAI MENYALIN KE DRIVE")  
 
             # Stop DDP TODO: known issues shttps://github.com/ultralytics/yolov5/pull/4576
             # stop = stopper(epoch=epoch, fitness=fi)
@@ -467,8 +480,8 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                         plots=plots,
                         callbacks=callbacks,
                         compute_loss=compute_loss)  # val best model with plots
-                    if is_coco:
-                        callbacks.run('on_fit_epoch_end', list(mloss) + list(results) + lr, epoch, best_fitness, fi)
+                    #if is_coco:
+                     #   callbacks.run('on_fit_epoch_end', list(mloss) + list(results) + lr, epoch, best_fitness, fi)
 
         callbacks.run('on_train_end', last, best, plots, epoch, results)
 
