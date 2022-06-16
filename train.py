@@ -443,9 +443,8 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
             shutil.make_archive("exp", 'zip', "/content/yolov5/runs/train/exp")  
             shutil.copy(source_folder, destination_folder)
 
-        print('make zip dan copy ')
-        
-        print("SELESAI MENYALIN KE DRIVE")  
+            print('make zip dan copy ')
+            print("SELESAI MENYALIN KE DRIVE")  
 
             # Stop DDP TODO: known issues shttps://github.com/ultralytics/yolov5/pull/4576
             # stop = stopper(epoch=epoch, fitness=fi)
